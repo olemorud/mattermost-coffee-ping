@@ -39,21 +39,23 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
-// Coffee() replies to mattermost webhooks with the correct token value
+// Coffee replies to mattermost webhooks containing valid token values
 func Coffee(writer http.ResponseWriter, request *http.Request) {
 	// Create cloud logging client or default to stderr
 	project_id := os.Getenv("PROJECT_ID")
 	ctx := context.Background()
 	client, err := logging.NewClient(ctx, project_id)
 	var stdlog *log.Logger
+	var warning *log.Logger
 
 	if err != nil {
+		log.Printf("Failed to create logging client: %v", err)
+		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+	} else {
 		defer client.Close()
 		logger := client.Logger("Coffee-log")
 		stdlog = logger.StandardLogger(logging.Debug)
-	} else {
-		log.Printf("Failed to create logging client: %v", err)
-		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+		warning = logger.StandardLogger(logging.Warning)
 	}
 
 	// Load valid mattermost tokens to reply to from env
@@ -73,20 +75,28 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	err = json.NewDecoder(request.Body).Decode(&incoming)
 
 	if err != nil {
-		stdlog.Printf("Failed to decode message: %v\n", err)
+		warning.Printf("Failed to decode message: %v\n", err)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
 	if !contains(tokens, incoming.Token) {
-		stdlog.Printf("Invalid request received with token %+v", incoming.Token)
+		warning.Printf("Invalid request received with token %+v\n", incoming.Token)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
+	text := "@omorud"
+	url, ok := os.LookupEnv("GITHUB_URL")
+	if ok {
+		text += " (now open source: " + url + ")"
+	}
+
+	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: text})
 
 	if err != nil {
-		stdlog.Printf("Failed to encode response: %v\n", err)
+		warning.Printf("Failed to encode response: %v\n", err)
 	}
+
+	stdlog.Printf("Successfully responded to message: %+v\n", incoming)
 }
