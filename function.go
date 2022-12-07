@@ -1,8 +1,10 @@
+package coffee
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 )
 
 type reply struct {
@@ -10,34 +12,41 @@ type reply struct {
 	Text          string `json:"text"`
 }
 
-// HelloWorld prints the JSON encoded "message" field in the body
-// of the request or "Hello, World!" if there isn't one.
+type message struct {
+	Message      string `json:"message"`
+	Channel_id   string `json:"channel_id"`
+	Channel_name string `json:"channel_name"`
+	Team_domain  string `json:"team_domain"`
+	Team_id      string `json:"team_id"`
+	Post_id      string `json:"post_id"`
+	Text         string `json:"text"`
+	Timestamp    int64  `json:"timestamp"`
+	Token        string `json:"token"`
+	Trigger_word string `json:"trigger_word"`
+	User_id      string `json:"user_id"`
+	User_name    string `json:"user_name"`
+}
+
+// Coffee() replies to mattermost webhooks with the correct token value
 func Coffee(writer http.ResponseWriter, request *http.Request) {
-	var data struct {
-		Message      string `json:"message"`
-		Channel_id   string `json:"channel_id"`
-		Channel_name string `json:"channel_name"`
-		Team_domain  string `json:"team_domain"`
-		Team_id      string `json:"team_id"`
-		Post_id      string `json:"post_id"`
-		Text         string `json:"text"`
-		Timestamp    int64  `json:"timestamp"`
-		Token        string `json:"token"`
-		Trigger_word string `json:"trigger_word"`
-		User_id      string `json:"user_id"`
-		User_name    string `json:"user_name"`
+	mattermost_token := os.Getenv("MATTERMOST_TOKEN")
+
+	if mattermost_token == "" {
+		log.Printf("Failed to load mattermost token")
+		return
 	}
 
-	err := json.NewDecoder(request.Body).Decode(&data)
+	incoming_msg := message{}
+	err := json.NewDecoder(request.Body).Decode(&incoming_msg)
+
 	if err != nil {
 		log.Printf("json.NewDecoder: %v\n", err)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("%+v", data.User_id)
-	if data.Token == "moha5q8xqjg9prbq7q73676z9y" || data.Token == "33szr8spqi8tx81ymdsxpq5mjh" {
+	log.Printf("Coffee requested by user id: %+v", incoming_msg.User_id)
+	if incoming_msg.Token == mattermost_token || incoming_msg.Token == "33szr8spqi8tx81ymdsxpq5mjh" {
 		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud @ksarband @psvihra"})
 	}
 }
-
