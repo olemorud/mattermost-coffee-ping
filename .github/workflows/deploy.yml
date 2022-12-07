@@ -23,11 +23,12 @@ jobs:
     - name: 'Deploy Cloud Function'
       uses: 'google-github-actions/deploy-cloud-functions@v1'
       with:
-        description: 'Ping selected group of members on mattermost when coffee is mentioned'
         name: 'Coffee'
+        description: 'Ping selected group of members on mattermost when coffee is mentioned'
+        env_vars: 'MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }}'
         runtime: 'go119'
         memory_mb: 128
         region: 'europe-west1'
 
     - name: 'Test #1'
-      run: 'echo "This should fail (no token)"; "curl "${{ steps.deploy.outputs.url }}" || true'
+      run: 'echo "This curl should fail (no token)"; "curl" "${{ steps.deploy.outputs.url }}" || true'
