@@ -1,10 +1,13 @@
 package coffee
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+
+	"cloud.google.com/go/logging"
 )
 
 type reply struct {
@@ -27,30 +30,69 @@ type message struct {
 	User_name    string `json:"user_name"`
 }
 
+func contains(haystack []string, needle string) bool {
+	for _, shiny := range haystack {
+		if shiny == needle {
+			return true
+		}
+	}
+	return false
+}
+
 // Coffee() replies to mattermost webhooks with the correct token value
 func Coffee(writer http.ResponseWriter, request *http.Request) {
-	mattermost_token := os.Getenv("MATTERMOST_TOKEN")
-	test_token := os.Getenv("TEST_TOKEN")
+	project_id := os.Getenv("PROJECT_ID")
 
-	if mattermost_token == "" || test_token == "" {
-		log.Fatal("Failed to load mattermost token")
+	if project_id == "" {
+		log.Fatal("Environment variable PROJECT_ID is empty")
 	}
 
-	incoming_msg := message{}
-	err := json.NewDecoder(request.Body).Decode(&incoming_msg)
+	// Create cloud logging client
+	ctx := context.Background()
+	client, err := logging.NewClient(ctx, project_id)
+
+	logger := client.Logger("Coffee-log")
+	var stdlog *log.Logger
 
 	if err != nil {
-		log.Printf("json.NewDecoder: %v\n", err)
+		defer client.Close()
+		stdlog = logger.StandardLogger(logging.Debug)
+	} else {
+		log.Printf("Failed to create logging client: %v", err)
+		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+	}
+
+	// Load valid tokens to reply to
+	tokens := make([]string, 0)
+
+	for _, envvar := range []string{"MATTERMOST_TOKEN", "TEST_TOKEN"} {
+		token := os.Getenv(envvar)
+		if token != "" {
+			tokens = append(tokens, token)
+		} else {
+			stdlog.Printf("Environment variable %v is empty\n", token)
+		}
+	}
+
+	// Unmarshal message and reply
+	incoming := message{}
+	err = json.NewDecoder(request.Body).Decode(&incoming)
+
+	if err != nil {
+		stdlog.Printf("Failed to decode message: %v\n", err)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("Coffee requested by user id: %+v", incoming_msg.User_id)
-	log.Println(incoming_msg)
+	if !contains(tokens, incoming.Token) {
+		stdlog.Printf("Invalid request received with token %+v", incoming.Token)
+		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
-	if incoming_msg.Token == mattermost_token || incoming_msg.Token == test_token {
-		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
-	} else {
-		log.Printf("Invalid request received with token: %v", incoming_msg.Token)
+	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
+
+	if err != nil {
+		stdlog.Printf("Failed to encode response: %v\n", err)
 	}
 }
