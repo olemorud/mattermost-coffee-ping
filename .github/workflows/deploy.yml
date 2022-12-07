@@ -1,40 +1,40 @@
 
-name: 'Deploy Google Cloud Function'
+name: Deploy Google Cloud Function
 
 on:
   workflow_dispatch:
   push:
     branches:
-    - 'master'
+    - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     steps:
-    - name: 'Checkout'
-      uses: 'actions/checkout@v3'
+    - name: Checkout
+      uses: actions/checkout@v3
 
-    - name: 'Google Cloud Authentication'
-      uses: 'google-github-actions/auth@v1'
+    - name: Google Cloud Authentication
+      uses: google-github-actions/auth@v1
       with:
         credentials_json: ${{ secrets.CLOUD_CREDENTIALS }}
 
-    - name: 'Deploy Cloud Function'
-      uses: 'google-github-actions/deploy-cloud-functions@v1'
+    - name: Deploy Cloud Function
+      uses: google-github-actions/deploy-cloud-functions@v1
       with:
-        name: 'coffee'
-        description: 'Ping selected group of members on mattermost when coffee is mentioned'
+        name: coffee
+        description: Ping selected group of members on mattermost when coffee is mentioned
         entry_point: Coffee
-        source_dir: 'src'
-        env_vars: 'PROJECT_ID=rising-city-366608,MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }}'
-        runtime: 'go119'
+        source_dir: src
+        env_vars: PROJECT_ID=rising-city-366608,MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }}
+        runtime: go119
         memory_mb: 128
-        region: 'europe-west1'
+        region: europe-west1
 
-    - name: 'Test #1'
-      run: 'echo "This curl should fail (no token)"; "curl" "${{ steps.deploy.outputs.url }}" || true'
+    - name: Test 1
+      run: '(chmod u+x test.sh && ./test.sh) || true'
