@@ -31,7 +31,7 @@ jobs:
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
         entry_point: Coffee
         source_dir: 'src'
-        env_vars: 'MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }}'
+        env_vars: 'PROJECT_ID=rising-city-366608,MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }}'
         runtime: 'go119'
         memory_mb: 128
         region: 'europe-west1'
