@@ -5,27 +5,29 @@ on: workflow_dispatch
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
+
     permissions:
       contents: 'read'
       id-token: 'write'
 
     steps:
-    - id: 'Checkout'
+    - name: 'Checkout'
       uses: 'actions/checkout@v3'
 
-    - id: 'Google Cloud Authentication'
+    - name: 'Google Cloud Authentication'
       uses: 'google-github-actions/auth@v1'
       with:
         credentials_json: ${{ secrets.CLOUD_CREDENTIALS }}
 
-    - id: 'Deploy Cloud Function'
+    - name: 'Deploy Cloud Function'
       uses: 'google-github-actions/deploy-cloud-functions@v1'
       with:
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
-        name: 'coffee2'
+        name: 'Coffee'
         runtime: 'go119'
-        memory_mb: 1
+        memory_mb: 128
         region: 'europe-west1'
 
-    - id: 'Test #1'
+    - name: 'Test #1'
       run: 'echo "This should fail (no token)"; "curl "${{ steps.deploy.outputs.url }}" || true'
