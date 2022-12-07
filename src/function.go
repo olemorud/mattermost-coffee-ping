@@ -41,6 +41,7 @@ func contains(haystack []string, needle string) bool {
 
 // Coffee() replies to mattermost webhooks with the correct token value
 func Coffee(writer http.ResponseWriter, request *http.Request) {
+	// Create cloud logging client or default to stderr
 	project_id := os.Getenv("PROJECT_ID")
 	ctx := context.Background()
 	client, err := logging.NewClient(ctx, project_id)
@@ -55,7 +56,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		stdlog = log.New(os.Stderr, "", log.LstdFlags)
 	}
 
-	// Load valid tokens to reply to
+	// Load valid mattermost tokens to reply to from env
 	tokens := make([]string, 0)
 
 	for _, envvar := range []string{"MATTERMOST_TOKEN", "TEST_TOKEN"} {
@@ -67,7 +68,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	// Unmarshal message and reply
+	// Unmarshal incoming message and reply
 	incoming := message{}
 	err = json.NewDecoder(request.Body).Decode(&incoming)
 
