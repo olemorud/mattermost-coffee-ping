@@ -42,20 +42,13 @@ func contains(haystack []string, needle string) bool {
 // Coffee() replies to mattermost webhooks with the correct token value
 func Coffee(writer http.ResponseWriter, request *http.Request) {
 	project_id := os.Getenv("PROJECT_ID")
-
-	if project_id == "" {
-		log.Fatal("Environment variable PROJECT_ID is empty")
-	}
-
-	// Create cloud logging client
 	ctx := context.Background()
 	client, err := logging.NewClient(ctx, project_id)
-
-	logger := client.Logger("Coffee-log")
 	var stdlog *log.Logger
 
 	if err != nil {
 		defer client.Close()
+		logger := client.Logger("Coffee-log")
 		stdlog = logger.StandardLogger(logging.Debug)
 	} else {
 		log.Printf("Failed to create logging client: %v", err)
