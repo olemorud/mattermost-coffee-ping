@@ -24,6 +24,7 @@ jobs:
       uses: 'google-github-actions/deploy-cloud-functions@v1'
       with:
         name: 'Coffee'
+        entry_point: Coffee
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
         env_vars: 'MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }}'
         runtime: 'go119'
