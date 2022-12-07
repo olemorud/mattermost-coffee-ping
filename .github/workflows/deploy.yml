@@ -1,6 +1,8 @@
 
 name: 'Deploy Google Cloud Function'
 
+on: workflow_dispatch
+
 jobs:
   deploy:
     permissions:
@@ -27,7 +29,3 @@ jobs:
 
     - id: 'Test #1'
       run: 'echo "This should fail (no token)"; "curl "${{ steps.deploy.outputs.url }}" || true'
-
-    - id: 'Test #2'
-      run: 'echo "This should succeed"; "curl "${{ steps.deploy.outputs.url }}" || true'
-
