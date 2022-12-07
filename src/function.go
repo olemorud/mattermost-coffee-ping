@@ -95,4 +95,6 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		stdlog.Printf("Failed to encode response: %v\n", err)
 	}
+
+	stdlog.Printf("Successfully responded to message: %+v", incoming)
 }
