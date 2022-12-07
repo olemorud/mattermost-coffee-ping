@@ -23,7 +23,7 @@ jobs:
     - name: 'Deploy Cloud Function'
       uses: 'google-github-actions/deploy-cloud-functions@v1'
       with:
-        name: 'Coffee'
+        name: 'coffee'
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
         entry_point: Coffee
         source_dir: 'cmd'
