@@ -84,7 +84,13 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
+	text := "@omorud"
+	url, ok := os.LookupEnv("GITHUB_URL")
+	if ok {
+		text += " (" + url + ")"
+	}
+
+	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: text})
 
 	if err != nil {
 		stdlog.Printf("Failed to encode response: %v\n", err)
