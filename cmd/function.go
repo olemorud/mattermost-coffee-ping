@@ -49,6 +49,6 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	log.Println(incoming_msg)
 
 	if incoming_msg.Token == mattermost_token || incoming_msg.Token == test_token {
-		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud @ksarband @psvihra"})
+		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
 	}
 }
