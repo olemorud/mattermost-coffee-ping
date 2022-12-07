@@ -50,5 +50,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 
 	if incoming_msg.Token == mattermost_token || incoming_msg.Token == test_token {
 		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud"})
+	} else {
+		log.Printf("Invalid request received with token: %v", incoming_msg.Token)
 	}
 }
