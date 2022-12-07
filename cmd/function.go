@@ -32,9 +32,8 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	mattermost_token := os.Getenv("MATTERMOST_TOKEN")
 	test_token := os.Getenv("TEST_TOKEN")
 
-	if mattermost_token == "" {
-		log.Printf("Failed to load mattermost token")
-		return
+	if mattermost_token == "" || test_token == "" {
+		log.Fatal("Failed to load mattermost token")
 	}
 
 	incoming_msg := message{}
@@ -47,6 +46,8 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("Coffee requested by user id: %+v", incoming_msg.User_id)
+	log.Println(incoming_msg)
+
 	if incoming_msg.Token == mattermost_token || incoming_msg.Token == test_token {
 		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud @ksarband @psvihra"})
 	}
