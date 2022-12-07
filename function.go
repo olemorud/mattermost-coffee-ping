@@ -30,6 +30,7 @@ type message struct {
 // Coffee() replies to mattermost webhooks with the correct token value
 func Coffee(writer http.ResponseWriter, request *http.Request) {
 	mattermost_token := os.Getenv("MATTERMOST_TOKEN")
+	test_token := os.Getenv("TEST_TOKEN")
 
 	if mattermost_token == "" {
 		log.Printf("Failed to load mattermost token")
@@ -46,7 +47,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	log.Printf("Coffee requested by user id: %+v", incoming_msg.User_id)
-	if incoming_msg.Token == mattermost_token || incoming_msg.Token == "33szr8spqi8tx81ymdsxpq5mjh" {
+	if incoming_msg.Token == mattermost_token || incoming_msg.Token == test_token {
 		json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: "@omorud @ksarband @psvihra"})
 	}
 }

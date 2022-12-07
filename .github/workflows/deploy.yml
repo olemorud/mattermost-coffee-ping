@@ -26,7 +26,7 @@ jobs:
         name: 'Coffee'
         entry_point: Coffee
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
-        env_vars: 'MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }}'
+        env_vars: 'MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }}'
         runtime: 'go119'
         memory_mb: 128
         region: 'europe-west1'
