@@ -26,7 +26,7 @@ jobs:
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
         name: 'coffee2'
         runtime: 'go119'
-        memory_mb: 1
+        memory_mb: 128
         region: 'europe-west1'
 
     - name: 'Test #1'
