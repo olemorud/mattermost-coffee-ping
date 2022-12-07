@@ -24,7 +24,7 @@ jobs:
       uses: 'google-github-actions/deploy-cloud-functions@v1'
       with:
         description: 'Ping selected group of members on mattermost when coffee is mentioned'
-        name: 'coffee2'
+        name: 'Coffee'
         runtime: 'go119'
         memory_mb: 128
         region: 'europe-west1'
