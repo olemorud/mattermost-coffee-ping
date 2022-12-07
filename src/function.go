@@ -48,12 +48,12 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	var stdlog *log.Logger
 
 	if err != nil {
+		log.Printf("Failed to create logging client: %v", err)
+		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+	} else {
 		defer client.Close()
 		logger := client.Logger("Coffee-log")
 		stdlog = logger.StandardLogger(logging.Debug)
-	} else {
-		log.Printf("Failed to create logging client: %v", err)
-		stdlog = log.New(os.Stderr, "", log.LstdFlags)
 	}
 
 	// Load valid mattermost tokens to reply to from env
