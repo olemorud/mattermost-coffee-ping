@@ -45,8 +45,9 @@ func contains(haystack []string, needle string) bool {
 func getCoffeeDrinkers(logger *log.Logger) []string {
 	username := os.Getenv("EGROUPS_USERNAME")
 	password := os.Getenv("EGROUPS_PASSWORD")
+	egroups_url := "https://foundservices.cern.ch:443/ws/egroups/v1/EgroupsWebService/"
 
-	soapClient := soap.NewClient("https://foundservices.cern.ch:443/ws/egroups/v1/EgroupsWebService/", soap.WithBasicAuth(username, password))
+	soapClient := soap.NewClient(egroups_url, soap.WithBasicAuth(username, password))
 	egroupsClient := egroups.NewEgroupsService(soapClient)
 
 	request := egroups.FindEgroupByIdRequest{Id: 10542497}
@@ -60,6 +61,7 @@ func getCoffeeDrinkers(logger *log.Logger) []string {
 	drinkers := make([]string, 0)
 
 	for _, member := range reply.Result.Members {
+		logger.Println(member)
 		drinkers = append(drinkers, "@"+strings.ToLower(member.PrimaryAccount))
 	}
 
@@ -78,6 +80,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		log.Printf("Failed to create logging client: %v", err)
 		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+		warning = log.New(os.Stderr, "", log.LstdFlags)
 	} else {
 		defer client.Close()
 		logger := client.Logger("Coffee-log")
@@ -93,7 +96,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		if token != "" {
 			tokens = append(tokens, token)
 		} else {
-			stdlog.Printf("Environment variable %v is not found/empty\n", token)
+			stdlog.Printf("Environment variable %v is not found/empty\n", envvar)
 		}
 	}
 
