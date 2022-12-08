@@ -122,10 +122,10 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		text += name + " "
 	}
 
-	url, ok := os.LookupEnv("GITHUB_URL")
-	if ok {
-		text += " (now open source: " + url + ")"
-	}
+	//url, ok := os.LookupEnv("GITHUB_URL")
+	//if ok {
+	//	text += " (now open source: " + url + ")"
+	//}
 
 	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: text})
 
