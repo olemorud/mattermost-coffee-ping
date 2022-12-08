@@ -6,8 +6,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"cloud.google.com/go/logging"
+	"example.com/cloudfunction/egroups"
+	"github.com/hooklift/gowsdl/soap"
 )
 
 type reply struct {
@@ -39,6 +42,29 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
+func getCoffeeDrinkers(logger *log.Logger) []string {
+	username := os.Getenv("EGROUPS_USERNAME")
+	password := os.Getenv("EGROUPS_PASSWORD")
+
+	soapClient := soap.NewClient("https://foundservices.cern.ch:443/ws/egroups/v1/EgroupsWebService/", soap.WithBasicAuth(username, password))
+	egroupsClient := egroups.NewEgroupsService(soapClient)
+
+	request := egroups.FindEgroupByIdRequest{Id: 10542497}
+	reply, err := egroupsClient.FindEgroupById(&request)
+
+	if err != nil {
+		logger.Println("Could not get egroup members:", err)
+	}
+
+	drinkers := make([]string, 0)
+
+	for _, member := range reply.Result.Members {
+		drinkers = append(drinkers, "@"+strings.ToLower(member.PrimaryAccount))
+	}
+
+	return drinkers
+}
+
 // Coffee replies to mattermost webhooks containing valid token values
 func Coffee(writer http.ResponseWriter, request *http.Request) {
 	// Create cloud logging client or default to stderr
@@ -66,7 +92,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		if token != "" {
 			tokens = append(tokens, token)
 		} else {
-			stdlog.Printf("Environment variable %v is empty\n", token)
+			stdlog.Printf("Environment variable %v is not found/empty\n", token)
 		}
 	}
 
@@ -86,7 +112,12 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	text := "@omorud"
+	text := ""
+
+	for _, name := range getCoffeeDrinkers(stdlog) {
+		text += name + " "
+	}
+
 	url, ok := os.LookupEnv("GITHUB_URL")
 	if ok {
 		text += " (now open source: " + url + ")"

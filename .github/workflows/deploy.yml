@@ -31,7 +31,14 @@ jobs:
         description: Ping selected group of members on mattermost when coffee is mentioned
         entry_point: Coffee
         source_dir: src
-        env_vars: PROJECT_ID=rising-city-366608,MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},TEST_TOKEN=${{ secrets.TEST_TOKEN }},GITHUB_URL=${{github.server_url}}/${{github.repository}}
+        env_vars: >-
+          PROJECT_ID=rising-city-366608,
+          MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},
+          TEST_TOKEN=${{ secrets.TEST_TOKEN }},
+          GITHUB_URL=${{github.server_url}}/${{github.repository}}
+        secret_environment_variables: >-
+          EGROUPS_USERNAME=projects/74365131111/secrets/EGROUPS_USERNAME,
+          EGROUPS_PASSWORD=projects/74365131111/secrets/EGROUPS_PASSWORD
         runtime: go119
         memory_mb: 128
         region: europe-west1
