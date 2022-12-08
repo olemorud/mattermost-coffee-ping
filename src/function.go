@@ -54,6 +54,7 @@ func getCoffeeDrinkers(logger *log.Logger) []string {
 
 	if err != nil {
 		logger.Println("Could not get egroup members:", err)
+		return []string{"@omorud"}
 	}
 
 	drinkers := make([]string, 0)
