@@ -33,8 +33,7 @@ jobs:
         source_dir: src
         env_vars: >-
           PROJECT_ID=rising-city-366608,
-          MATTERMOST_TOKEN=${{ secrets.MATTERMOST_TOKEN }},
-          TEST_TOKEN=${{ secrets.TEST_TOKEN }},
+          COMMA_SEPARATED_TOKEN_WHITELIST=${{ secrets.COMMA_SEPARATED_TOKEN_WHITELIST }},
           GITHUB_URL=${{github.server_url}}/${{github.repository}}
         secret_environment_variables: >-
           EGROUPS_USERNAME=projects/74365131111/secrets/EGROUPS_USERNAME,

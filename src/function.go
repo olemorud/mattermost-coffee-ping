@@ -13,12 +13,12 @@ import (
 	"github.com/hooklift/gowsdl/soap"
 )
 
-type reply struct {
+type mattermostReply struct {
 	Response_type string `json:"response_type"`
 	Text          string `json:"text"`
 }
 
-type message struct {
+type mattermostMessage struct {
 	Message      string `json:"message"`
 	Channel_id   string `json:"channel_id"`
 	Channel_name string `json:"channel_name"`
@@ -42,7 +42,20 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
-func getCoffeeDrinkers(logger *log.Logger) []string {
+func omitEmptyStrings(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
+}
+
+var debug *log.Logger
+var warning *log.Logger
+
+func getCoffeeDrinkers() []string {
 	username := os.Getenv("EGROUPS_USERNAME")
 	password := os.Getenv("EGROUPS_PASSWORD")
 	egroups_url := "https://foundservices.cern.ch:443/ws/egroups/v1/EgroupsWebService/"
@@ -54,84 +67,79 @@ func getCoffeeDrinkers(logger *log.Logger) []string {
 	reply, err := egroupsClient.FindEgroupById(&request)
 
 	if err != nil {
-		logger.Println("Could not get egroup members:", err)
+		warning.Println("Could not get egroup members:", err)
 		return []string{"@omorud"}
 	}
 
 	drinkers := make([]string, 0)
 
 	for _, member := range reply.Result.Members {
-		logger.Println(member)
 		drinkers = append(drinkers, "@"+strings.ToLower(member.PrimaryAccount))
 	}
 
 	return drinkers
 }
 
-// Coffee replies to mattermost webhooks containing valid token values
+// Entrypoint of google cloud function:
+//
+//	Upon receiving a webhook from mattermost, respond to the webhook by tagging
+//	everyone in e-group 10542497
 func Coffee(writer http.ResponseWriter, request *http.Request) {
-	// Create cloud logging client or default to stderr
+	// Create cloud logging client, default to stderr on failure
 	project_id := os.Getenv("PROJECT_ID")
-	ctx := context.Background()
-	client, err := logging.NewClient(ctx, project_id)
-	var stdlog *log.Logger
-	var warning *log.Logger
+	client, err := logging.NewClient(context.Background(), project_id)
 
 	if err != nil {
 		log.Printf("Failed to create logging client: %v", err)
-		stdlog = log.New(os.Stderr, "", log.LstdFlags)
+		debug = log.New(os.Stderr, "", log.LstdFlags)
 		warning = log.New(os.Stderr, "", log.LstdFlags)
 	} else {
 		defer client.Close()
 		logger := client.Logger("Coffee-log")
-		stdlog = logger.StandardLogger(logging.Debug)
+		debug = logger.StandardLogger(logging.Debug)
 		warning = logger.StandardLogger(logging.Warning)
 	}
 
-	// Load valid mattermost tokens to reply to from env
-	tokens := make([]string, 0)
-
-	for _, envvar := range []string{"MATTERMOST_TOKEN", "TEST_TOKEN"} {
-		token := os.Getenv(envvar)
-		if token != "" {
-			tokens = append(tokens, token)
-		} else {
-			stdlog.Printf("Environment variable %v is not found/empty\n", envvar)
-		}
-	}
-
-	// Unmarshal incoming message and reply
-	incoming := message{}
-	err = json.NewDecoder(request.Body).Decode(&incoming)
+	// Unmarshal incoming message
+	incomingMsg := mattermostMessage{}
+	err = json.NewDecoder(request.Body).Decode(&incomingMsg)
 
 	if err != nil {
-		warning.Printf("Failed to decode message: %v\n", err)
+		warning.Printf("Failed to decode message: %v\n%+v\n", err, request.Body)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	if !contains(tokens, incoming.Token) {
-		warning.Printf("Invalid request received with token %+v\n", incoming.Token)
+	unsafeWhitelist := strings.Split(os.Getenv("COMMA_SEPARATED_TOKEN_WHITELIST"), ",")
+	whitelist := omitEmptyStrings(unsafeWhitelist)
+
+	if !contains(whitelist, incomingMsg.Token) {
+		warning.Printf("Invalid request received with token %+v\n", incomingMsg.Token)
 		http.Error(writer, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	text := ""
-
-	for _, name := range getCoffeeDrinkers(stdlog) {
-		text += name + " "
+	// Respond to incoming message
+	reply := mattermostReply{
+		Response_type: "comment",
+		Text:          "",
 	}
 
-	//url, ok := os.LookupEnv("GITHUB_URL")
-	//if ok {
-	//	text += " (now open source: " + url + ")"
-	//}
+	for _, name := range getCoffeeDrinkers() {
+		reply.Text += name + " "
+	}
 
-	err = json.NewEncoder(writer).Encode(&reply{Response_type: "comment", Text: text})
+	reply.Text += "| [get tagged by bot](https://e-groups.cern.ch/e-groups/Egroup.do?egroupId=10542497)"
+
+	url, ok := os.LookupEnv("GITHUB_URL")
+	if ok {
+		reply.Text += " | [view source](" + url + ")"
+	}
+
+	err = json.NewEncoder(writer).Encode(reply)
 
 	if err != nil {
 		warning.Printf("Failed to encode response: %v\n", err)
 	}
-
-	stdlog.Printf("Successfully responded to message: %+v\n", incoming)
+	debug.Printf("Successfully responded to message: %+v\n", incomingMsg)
 }
