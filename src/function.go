@@ -110,7 +110,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	unsafeWhitelist := strings.Split(os.Getenv("COMMA_SEPARATED_TOKEN_WHITELIST"), ",")
+	unsafeWhitelist := strings.Split(os.Getenv("COLON_SEPARATED_TOKEN_WHITELIST"), ":")
 	whitelist := omitEmptyStrings(unsafeWhitelist)
 
 	if !contains(whitelist, incomingMsg.Token) {
