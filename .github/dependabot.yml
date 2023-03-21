@@ -1,0 +1,13 @@
+
+version: 2
+updates:
+  - package-ecosystem: "gomod
+    directory: "/src"
+    schedule:
+      interval: "daily"
+
+  
+  - package-ecosystem: "github-actions"
+    directory: "/" # _For GitHub Actions, set the directory to / to check for workflow files in .github/workflows_
+    schedule:
+      interval: "daily"
