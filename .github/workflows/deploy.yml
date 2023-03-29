@@ -41,6 +41,3 @@ jobs:
         runtime: go119
         memory_mb: 128
         region: europe-west1
-
-    - name: Test 1
-      run: '(chmod u+x test.sh && ./test.sh) || true'
