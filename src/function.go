@@ -129,7 +129,7 @@ func Coffee(writer http.ResponseWriter, request *http.Request) {
 		reply.Text += name + " "
 	}
 
-	reply.Text += "| [get tagged by bot](https://e-groups.cern.ch/e-groups/Egroup.do?egroupId=10542497)"
+	reply.Text += "| [get tagged by bot](https://e-groups.cern.ch/e-groups/EgroupsSubscription.do?egroupId=10542497)"
 
 	url, ok := os.LookupEnv("GITHUB_URL")
 	if ok {
