@@ -1,6 +1,11 @@
 
 # Mattermost Coffee Bot
 
+Pings a set of people when someone writes a message starting with a keyword.
+
+![image](https://github.com/olemorud/mattermost-coffee-ping/assets/82065181/244fcc06-2c9c-4e5e-961a-d92a2f253178)
+
+
 ## Setup
 
 These instructions have not been thoroughly tested, open an issue if something
@@ -10,13 +15,14 @@ does not work or is unclear.
 
 Open the Channel you want the bot integration for in Mattermost.
 
-On the top-left there is a waffle menu icon: (looks kind of like: ☷)
+On the top-left there is a waffle menu icon: ![image](https://github.com/olemorud/mattermost-coffee-ping/assets/82065181/3ebe3023-9bac-4c4b-801a-209c37633cfe)
 
-Open **☷ -> Integrations -> Outgoing Webhooks -> Add Outgoing Webhook**
+Open **![image](https://github.com/olemorud/mattermost-coffee-ping/assets/82065181/7ba5a126-e138-472d-8820-9a77e2b63f7e) -> Integrations -> Outgoing Webhooks -> Add Outgoing Webhook**
 
 Add required and optional fields as you wish, but leave the Callback URLs field
 empty for now. When saved, a card with information containing a _Token_ should
 be displayed. This will be used later.
+
 
 ### Setting up Google Cloud
 
@@ -57,6 +63,7 @@ Open **Google Cloud -> Security -> Secret Manager** ([link](https://console.clou
 
 with appropriate values.
 
+
 ### GitHub repository setup
 
 #### Adding secrets
@@ -75,6 +82,7 @@ add the following repository secrets:
 
 Open **Actions -> Deploy Google Cloud Function** and press **Run workflow**.
 Deploying a function usually takes a around 5 minutes.
+
 
 ### Verify and final fixes
 
