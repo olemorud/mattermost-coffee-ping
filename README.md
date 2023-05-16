@@ -15,8 +15,8 @@ On the top-left there is a waffle menu icon: (looks kind of like: ☷)
 Open **☷ -> Integrations -> Outgoing Webhooks -> Add Outgoing Webhook**
 
 Add required and optional fields as you wish, but leave the Callback URLs field
-empty for now. When saved, there should be a card with information and a _Token_.
-This will be used later.
+empty for now. When saved, a card with information containing a _Token_ should
+be displayed. This will be used later.
 
 ### Setting up Google Cloud
 
@@ -44,7 +44,8 @@ Download credentials as a json file from
 
 CERN e-groups do not support API keys, and the bot has to authenticate with
 username and password. Create a new e-groups account to mitigate exposure of
-your own CERN user credentials.
+your own CERN user credentials. The account needs ownership of the e-group.
+The link to the e-group is https://e-groups.cern.ch/e-groups/Egroup.do?egroupId=10542497
 
 The password and username **should not** be stored as a secret within a GitHub
 repository, but inside Google Cloud.
